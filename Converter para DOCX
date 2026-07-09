@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+PASTA_DESTINO="$HOME/Documentos/Convertidos"
+mkdir -p "$PASTA_DESTINO"
+
+quantidade=0
+
+printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquivo; do
+    [[ "$arquivo" == *.docx ]] && continue
+
+    base=$(basename "$arquivo")
+    nome_sem_ext="${base%.*}"
+    ext="${arquivo##*.}"
+    destino="$PASTA_DESTINO/${nome_sem_ext}.docx"
+
+    case "$ext" in
+        md|markdown|txt|html|rst|org|odt|rtf|tex|latex)
+            pandoc "$arquivo" -o "$destino" -t docx
+            ;;
+        pdf)
+            tmp_txt=$(mktemp)
+            pdftotext "$arquivo" "$tmp_txt"
+            pandoc "$tmp_txt" -o "$destino" -t docx
+            rm -f "$tmp_txt"
+            ;;
+        *)
+            pandoc "$arquivo" -o "$destino" -t docx 2>/dev/null || true
+            ;;
+    esac
+
+    quantidade=$((quantidade + 1))
+done
+
+if [ "$quantidade" -gt 0 ]; then
+    notify-send "Conversão para DOCX concluída" \
+                "Arquivos convertidos salvos em: $PASTA_DESTINO" \
+                -u normal
+else
+    notify-send "Nenhum arquivo convertido para DOCX" \
+                "Os arquivos selecionados já eram DOCX ou não foram suportados." \
+                -u normal
+fi
