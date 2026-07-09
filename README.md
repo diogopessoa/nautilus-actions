@@ -1,4 +1,4 @@
-# Atalhos de Ações Rápidas para o Nautilus
+# Atalhos de Ações Rápidas no Nautilus
 
 Ações rápidas com clique direito dentro do **Nautilus** (GNOME Files) para **Fedora Atomic**, com foco em conversão de documentos e imagens.
 
