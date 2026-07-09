@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+PASTA_DESTINO="$HOME/Documentos/Convertidos"
+mkdir -p "$PASTA_DESTINO"
+
+quantidade=0
+
+printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquivo; do
+    [[ "$arquivo" == *.txt ]] && continue
+
+    base=$(basename "$arquivo")
+    nome_sem_ext="${base%.*}"
+    ext="${arquivo##*.}"
+    destino="$PASTA_DESTINO/${nome_sem_ext}.txt"
+
+    case "$ext" in
+        docx|odt|rtf|html|rst|org|md|markdown|tex|latex)
+            pandoc "$arquivo" -o "$destino" -t plain
+            ;;
+        pdf)
+            pdftotext "$arquivo" "$destino"
+            ;;
+        *)
+            pandoc "$arquivo" -o "$destino" -t plain 2>/dev/null || true
+            ;;
+    esac
+
+    quantidade=$((quantidade + 1))
+done
+
+if [ "$quantidade" -gt 0 ]; then
+    notify-send "Conversão para TXT concluída" \
+                "Arquivos convertidos salvos em: $PASTA_DESTINO" \
+                -u normal
+else
+    notify-send "Nenhum arquivo convertido para TXT" \
+                "Os arquivos selecionados já eram TXT ou não foram suportados." \
+                -u normal
+fi
