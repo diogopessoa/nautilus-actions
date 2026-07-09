@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+PASTA_DESTINO="$HOME/Documentos/Convertidos"
+mkdir -p "$PASTA_DESTINO"
+
+quantidade=0
+
+printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquivo; do
+    [[ "$arquivo" == *.png ]] && continue
+
+    base=$(basename "$arquivo")
+    nome_sem_ext="${base%.*}"
+    destino="$PASTA_DESTINO/${nome_sem_ext}.png"
+
+    convert "$arquivo" "$destino"
+
+    quantidade=$((quantidade + 1))
+done
+
+if [ "$quantidade" -gt 0 ]; then
+    notify-send "Conversão para PNG concluída" \
+                "Imagens convertidas salvas em: $PASTA_DESTINO" \
+                -u normal
+else
+    notify-send "Nenhuma imagem convertida para PNG" \
+                "Os arquivos selecionados já eram PNG ou não foram suportados." \
+                -u normal
+fi
