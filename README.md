@@ -78,13 +78,20 @@ No Nautilus:
 
 Os arquivos convertidos aparecerão em `~/Documentos/Convertidos`.
 
-## Destino dos Scripts
+## Destino das Pastas
+
+Após executar `./install.sh`, as pastas ficarão localizadas em:
 
 ```text
-# Dentro da pasta scripts:
-~/.local/share/nautilus/scripts/
+~/Documentos/Convertidos/ # os arquivos convertidos 
+
+~/.local/share/nautilus/scripts/ # os scripts
 ```
 
 ## Licença
 
 - [MIT](https://github.com/diogopessoa/nautilus-actions/blob/main/LICENSE)
+
+## Créditos
+
+- Inspirado em: [cfgnunes/nautilus-scripts](https://github.com/cfgnunes/nautilus-scripts).
