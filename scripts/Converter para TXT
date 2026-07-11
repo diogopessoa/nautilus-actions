@@ -5,7 +5,9 @@ mkdir -p "$PASTA_DESTINO"
 
 quantidade=0
 
-printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquivo; do
+while IFS= read -r arquivo; do
+    [ -z "$arquivo" ] && continue
+    [ ! -f "$arquivo" ] && continue
     [[ "$arquivo" == *.txt ]] && continue
 
     base=$(basename "$arquivo")
@@ -14,19 +16,23 @@ printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquiv
     destino="$PASTA_DESTINO/${nome_sem_ext}.txt"
 
     case "$ext" in
-        docx|odt|rtf|html|rst|org|md|markdown|tex|latex)
-            pandoc "$arquivo" -o "$destino" -t plain
-            ;;
         pdf)
-            pdftotext "$arquivo" "$destino"
+            if pdftotext "$arquivo" "$destino"; then
+                quantidade=$((quantidade + 1))
+            fi
+            ;;
+        docx|odt|rtf|html|rst|org|md|markdown|tex|latex)
+            if pandoc "$arquivo" -o "$destino" -t plain; then
+                quantidade=$((quantidade + 1))
+            fi
             ;;
         *)
-            pandoc "$arquivo" -o "$destino" -t plain 2>/dev/null || true
+            if pandoc "$arquivo" -o "$destino" -t plain 2>/dev/null; then
+                quantidade=$((quantidade + 1))
+            fi
             ;;
     esac
-
-    quantidade=$((quantidade + 1))
-done
+done < <(printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS")
 
 if [ "$quantidade" -gt 0 ]; then
     notify-send "Conversão para TXT concluída" \
