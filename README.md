@@ -1,4 +1,4 @@
-# Atalhos de Ações Rápidas no Nautilus
+# Ações Rápidas no Nautilus
 
 Script de **ações rápidas** com clique direito dentro do **Nautilus** (GNOME Files) para **Fedora Atomic**, com foco em conversão de documentos e imagens.
 
@@ -26,48 +26,47 @@ Ao final de cada ação, uma notificação é enviada via `notify-send`.
 
 - Nautilus (GNOME Files)
 - GNOME Shell 
-- Ferramentas instaladas - via [Homebrew](https://brew.sh/pt-br/) ou rpm-ostree:
-  - `pandoc`
-  - `poppler` (para `pdftotext`)
-  - `imagemagick`
-  - `typst`
+- [Homebrew](https://brew.sh/pt-br/) para instalação das dependências
 
-Exemplo:
+Instale as dependências com:
 
 ```bash
 brew install pandoc poppler imagemagick typst
+``` 
+
+## Destino das Pastas Após Instalação
+
+Após executar `./install.sh`, serão criadas duas pastas em:
+
+```text
+~/Documentos/Convertidos/ # os arquivos convertidos 
+
+~/.local/share/nautilus/scripts/ # os scripts
 ```
 
 ## Instalação
 
-1. Clone o repositório:
+Clone o repositório e execute o script de instalação:
 
-   ```bash
-   git clone https://github.com/diogopessoa/nautilus-actions.git
-   cd nautilus-actions
-   ```
+```bash
+git clone https://github.com/diogopessoa/nautilus-actions.git && cd nautilus-actions && chmod +x install.sh && ./install.sh
+```
 
-2. Execute o script de instalação:
+Depois reinicie o Nautilus:
 
-   ```bash
-   chmod +x install.sh
-   ./install.sh
-   ```
-
-3. Reinicie o Nautilus:
-
-   ```bash
-   nautilus -q
-   nautilus &
-   ```
+```bash
+nautilus -q
+nautilus &
+```
 
 ## Uso
 
 No Nautilus:
 
 1. Selecione um ou mais arquivos.
-2. Clique direito → **Scripts**.
-3. Escolha uma das ações:
+2. Clique com o botão direito.
+3. Vá em **Scripts**.
+4. Escolha uma das ações disponíveis:
    - `Converter para PDF`
    - `Converter para DOCX`
    - `Converter para Markdown`
@@ -76,16 +75,19 @@ No Nautilus:
    - `Imagem para JPG`
    - `Imagem para WEBP`
 
-Os arquivos convertidos aparecerão em `~/Documentos/Convertidos`.
+Os arquivos convertidos serão salvos em:
 
-## Destino das Pastas
+```bash
+~/Documentos/Convertidos
+```
 
-Após executar `./install.sh`, as pastas ficarão localizadas em:
+## Desinstalação
 
-```text
-~/Documentos/Convertidos/ # os arquivos convertidos 
+Caso queira remover os scripts instalados e, opcionalmente, os arquivos gerados e as dependências do Homebrew:
 
-~/.local/share/nautilus/scripts/ # os scripts
+```bash
+chmod +x uninstall.sh
+./uninstall.sh
 ```
 
 ## Licença
