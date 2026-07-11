@@ -5,7 +5,9 @@ mkdir -p "$PASTA_DESTINO"
 
 quantidade=0
 
-printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquivo; do
+while IFS= read -r arquivo; do
+    [ -z "$arquivo" ] && continue
+    [ ! -f "$arquivo" ] && continue
     [[ "$arquivo" == *.docx ]] && continue
 
     base=$(basename "$arquivo")
@@ -15,21 +17,24 @@ printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquiv
 
     case "$ext" in
         md|markdown|txt|html|rst|org|odt|rtf|tex|latex)
-            pandoc "$arquivo" -o "$destino" -t docx
+            if pandoc "$arquivo" -o "$destino" -t docx; then
+                quantidade=$((quantidade + 1))
+            fi
             ;;
         pdf)
             tmp_txt=$(mktemp)
-            pdftotext "$arquivo" "$tmp_txt"
-            pandoc "$tmp_txt" -o "$destino" -t docx
+            if pdftotext "$arquivo" "$tmp_txt" && pandoc "$tmp_txt" -o "$destino" -t docx; then
+                quantidade=$((quantidade + 1))
+            fi
             rm -f "$tmp_txt"
             ;;
         *)
-            pandoc "$arquivo" -o "$destino" -t docx 2>/dev/null || true
+            if pandoc "$arquivo" -o "$destino" -t docx 2>/dev/null; then
+                quantidade=$((quantidade + 1))
+            fi
             ;;
     esac
-
-    quantidade=$((quantidade + 1))
-done
+done < <(printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS")
 
 if [ "$quantidade" -gt 0 ]; then
     notify-send "Conversão para DOCX concluída" \
