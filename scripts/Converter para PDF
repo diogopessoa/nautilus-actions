@@ -5,8 +5,9 @@ mkdir -p "$PASTA_DESTINO"
 
 quantidade=0
 
-printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquivo; do
-    # Ignora se já for PDF
+while IFS= read -r arquivo; do
+    [ -z "$arquivo" ] && continue
+    [ ! -f "$arquivo" ] && continue
     [[ "$arquivo" == *.pdf ]] && continue
 
     base=$(basename "$arquivo")
@@ -14,26 +15,27 @@ printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquiv
     ext="${arquivo##*.}"
     destino="$PASTA_DESTINO/${nome_sem_ext}.pdf"
 
-    # Formatos de texto/markup: pandoc -> typst -> PDF
     case "$ext" in
         md|markdown|txt|html|rst|org|docx|odt|rtf)
             tmp_typ=$(mktemp --suffix=.typ)
-            pandoc "$arquivo" -o "$tmp_typ" -t typst
-            typst compile "$tmp_typ" "$destino"
+            if pandoc "$arquivo" -o "$tmp_typ" -t typst && typst compile "$tmp_typ" "$destino"; then
+                quantidade=$((quantidade + 1))
+            fi
             rm -f "$tmp_typ"
             ;;
         tex|latex)
-            typst compile "$arquivo" "$destino" 2>/dev/null || true
+            if typst compile "$arquivo" "$destino" 2>/dev/null; then
+                quantidade=$((quantidade + 1))
+            fi
             ;;
         *)
-            pandoc "$arquivo" -o "$destino" 2>/dev/null || true
+            if pandoc "$arquivo" -o "$destino" 2>/dev/null; then
+                quantidade=$((quantidade + 1))
+            fi
             ;;
     esac
+done < <(printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS")
 
-    quantidade=$((quantidade + 1))
-done
-
-# Notificação final (fora do subshell do while)
 if [ "$quantidade" -gt 0 ]; then
     notify-send "Conversão para PDF concluída" \
                 "Arquivos convertidos salvos em: $PASTA_DESTINO" \
