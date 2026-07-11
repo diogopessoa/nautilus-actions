@@ -5,17 +5,19 @@ mkdir -p "$PASTA_DESTINO"
 
 quantidade=0
 
-printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquivo; do
+while IFS= read -r arquivo; do
+    [ -z "$arquivo" ] && continue
+    [ ! -f "$arquivo" ] && continue
     [[ "$arquivo" == *.png ]] && continue
 
     base=$(basename "$arquivo")
     nome_sem_ext="${base%.*}"
     destino="$PASTA_DESTINO/${nome_sem_ext}.png"
 
-    convert "$arquivo" "$destino"
-
-    quantidade=$((quantidade + 1))
-done
+    if convert "$arquivo" "$destino"; then
+        quantidade=$((quantidade + 1))
+    fi
+done < <(printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS")
 
 if [ "$quantidade" -gt 0 ]; then
     notify-send "Conversão para PNG concluída" \
