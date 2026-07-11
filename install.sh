@@ -1,52 +1,38 @@
 #!/usr/bin/env bash
-#
-# install.sh - Instala scripts de ação rápida no Nautilus
-# Autor: Diogo Pessoa
-#
-# Requisitos:
-#   - Homebrew com: pandoc, poppler, imagemagick, typst
-#   - GNOME Shell
-#   - Fedora Atomic
-#
 
-set -e
+set -euo pipefail
 
-SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_SRC="$REPO_DIR/scripts"
 TARGET_DIR="$HOME/.local/share/nautilus/scripts"
 
-echo ">> Criando diretório de scripts do Nautilus (se não existir): $TARGET_DIR"
+if ! command -v brew >/dev/null 2>&1; then
+    echo "Erro: Homebrew não encontrado."
+    echo "Instale o Homebrew antes de continuar."
+    exit 1
+fi
+
+echo ">> Homebrew encontrado."
+
+echo ">> Instalando dependências..."
+brew install pandoc poppler imagemagick typst
+
+if [ ! -d "$SCRIPTS_SRC" ]; then
+    echo "Erro: pasta scripts/ não encontrada em $SCRIPTS_SRC"
+    exit 1
+fi
+
+echo ">> Criando diretório do Nautilus: $TARGET_DIR"
 mkdir -p "$TARGET_DIR"
 
-echo ">> Copiando scripts para $TARGET_DIR ..."
-for script in "$SCRIPTS_DIR"/*; do
+echo ">> Copiando scripts..."
+for script in "$SCRIPTS_SRC"/*; do
     [ -f "$script" ] || continue
-    # Ignora o próprio install.sh
-    base=$(basename "$script")
-    [ "$base" = "install.sh" ] && continue
-
-    echo "   - $base"
-    cp "$script" "$TARGET_DIR/"
+    base="$(basename "$script")"
+    cp "$script" "$TARGET_DIR/$base"
     chmod +x "$TARGET_DIR/$base"
+    echo "   - $base"
 done
 
-echo ""
-echo ">> Instalação concluída!"
-echo ""
-echo "Próximos passos:"
-echo "  1. Reinicie o Nautilus:"
-echo "       nautilus -q"
-echo "       nautilus &"
-echo ""
-echo "  2. No Nautilus, selecione arquivos/pastas, clique direito → Scripts"
-echo "     e use as ações instaladas:"
-echo "       - Converter para PDF"
-echo "       - Converter para DOCX"
-echo "       - Converter para Markdown"
-echo "       - Converter para TXT"
-echo "       - Imagem para PNG"
-echo "       - Imagem para JPG"
-echo "       - Imagem para WEBP"
-echo ""
-echo "Os arquivos convertidos serão salvos em:"
-echo "  ~/Documentos/Convertidos"
-echo ""
+echo ">> Instalação concluída."
+echo ">> Reinicie o Nautilus com: nautilus -q && nautilus &"
