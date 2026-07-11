@@ -5,17 +5,19 @@ mkdir -p "$PASTA_DESTINO"
 
 quantidade=0
 
-printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | while IFS= read -r arquivo; do
+while IFS= read -r arquivo; do
+    [ -z "$arquivo" ] && continue
+    [ ! -f "$arquivo" ] && continue
     [[ "$arquivo" == *.jpg || "$arquivo" == *.jpeg ]] && continue
 
     base=$(basename "$arquivo")
     nome_sem_ext="${base%.*}"
     destino="$PASTA_DESTINO/${nome_sem_ext}.jpg"
 
-    convert "$arquivo" -quality 85 "$destino"
-
-    quantidade=$((quantidade + 1))
-done
+    if convert "$arquivo" -quality 85 "$destino"; then
+        quantidade=$((quantidade + 1))
+    fi
+done < <(printf '%s\n' "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS")
 
 if [ "$quantidade" -gt 0 ]; then
     notify-send "Conversão para JPG concluída" \
@@ -23,6 +25,6 @@ if [ "$quantidade" -gt 0 ]; then
                 -u normal
 else
     notify-send "Nenhuma imagem convertida para JPG" \
-                "Os arquivos selecionados já eram JPG ou não foram suportados." \
+                "Os arquivos selecionados já eram JPG/JPEG ou não foram suportados." \
                 -u normal
 fi
